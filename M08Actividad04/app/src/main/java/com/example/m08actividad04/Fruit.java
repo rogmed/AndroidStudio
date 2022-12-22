@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.RectF;
 
@@ -21,7 +22,7 @@ public class Fruit extends GameObject {
         this.singleFruit = randomizeImage(allFruits, 7, 4);
 
         this.speed = 10;
-        this.radius = 50;
+        this.radius = 100;
 
         this.paint = new Paint();
         paint.setColor(Color.RED);
@@ -30,6 +31,7 @@ public class Fruit extends GameObject {
 
     public void draw() {
         this.posY = juego.getHeight();
+        this.posX = new Random().nextInt(juego.getWidth());
         this.rectangle = new RectF((posX-radius),(posY-radius),(posX+radius),(posY+radius));
     }
 
@@ -66,5 +68,4 @@ public class Fruit extends GameObject {
 
         return tempImage;
     }
-
 }

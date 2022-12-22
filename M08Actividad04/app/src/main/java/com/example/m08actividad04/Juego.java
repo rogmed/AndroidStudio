@@ -24,7 +24,7 @@ public class Juego extends View {
     public int score = 0;
     public int fails = 0;
 
-    Bitmap fruits = BitmapFactory.decodeResource(getResources(), R.drawable.fruits);
+    Bitmap fruits = BitmapFactory.decodeResource(getResources(), R.drawable.fruitstransparent);
     Fruit fruit = new Fruit(this, fruits);
 
     Bitmap basketImage = BitmapFactory.decodeResource(getResources(), R.drawable.basket);

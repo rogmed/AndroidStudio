@@ -16,7 +16,7 @@ public class Basket extends GameObject {
         this.juego = juego;
         this.image = image;
 
-        this.radius = 50;
+        this.radius = 100;
         this.posX = juego.getWidth() / 2;
         this.posY = radius + 50;
 
