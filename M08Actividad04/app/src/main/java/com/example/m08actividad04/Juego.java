@@ -12,6 +12,8 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.util.Random;
+
 public class Juego extends View {
 
     public Juego(Context context) {
@@ -23,12 +25,14 @@ public class Juego extends View {
 
     public int score = 0;
     public int fails = 0;
+    String message = "";
+    int messageX, messageY, sizeMessage;
 
-    Bitmap fruits = BitmapFactory.decodeResource(getResources(), R.drawable.fruitstransparent);
-    Fruit fruit = new Fruit(this, fruits);
+    Fruit fruit;
+    private int speed;
+    Basket basket;
 
-    Bitmap basketImage = BitmapFactory.decodeResource(getResources(), R.drawable.basket);
-    Basket basket = new Basket(this, basketImage);
+    Bitmap allFruits = BitmapFactory.decodeResource(getResources(), R.drawable.fruitstransparent);
 
     //Sección que capta los eventos del usuario
     @Override
@@ -47,62 +51,84 @@ public class Juego extends View {
     public Juego(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
+
+    public void setup(int speed) {
+        this.speed = speed;
+    }
+
     @SuppressLint("DrawAllocation")
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
+            super.onDraw(canvas);
 
-        //Definimos los objetos a pintar
-        Paint fondo = new Paint();
-        //Paint cesta = new Paint();
+            //Definimos los objetos a pintar
+            Paint fondo = new Paint();
+            Paint lbTotalScore = new Paint();
+            Paint lbPlusScore = new Paint();
+            Paint lbFails = new Paint();
 
-        //Paint moneda = new Paint();
-        Paint posicionMoneda = new Paint();
-        Paint posicionCesta = new Paint();
-        Paint hit = new Paint();
-        Paint lbScore = new Paint();
-        Paint lbFails = new Paint();
+            Paint fruitPosition = new Paint();
 
-        // Fondo
-        fondo.setColor(Color.BLACK);
-        fondo.setStyle(Paint.Style.FILL_AND_STROKE);
-        canvas.drawRect(new Rect(0,0,(this.getWidth()),(this.getHeight())),fondo);
+            // Fondo
+            fondo.setColor(Color.BLACK);
+            fondo.setStyle(Paint.Style.FILL_AND_STROKE);
+            canvas.drawRect(new Rect(0,0,(this.getWidth()),(this.getHeight())),fondo);
 
-        // Update fruta y cesta
-        basket.update(canvas);
-        fruit.update(canvas);
+            // Update fruta y cesta
+            if (basket == null) {
+                basket = new Basket(this, canvas);
+            } else {
+                basket.update();
+            }
 
-        // Si colisiona fruta y cesta suma punta y resetea fruta
-        if(checkCollision(basket, fruit)) {
-            fruit.reset(canvas);
-            score += 1;
-        }
+            boolean fruitIsOut = fruit != null && fruit.posY < 0;
+            // Si no hay fruta genera una, si hay fruta actualiza su posicion
+            if (fruit == null || fruitIsOut) {
+                fruit = createFruit(canvas);
+                if(fruitIsOut) { fails++; }
+            } else {
 
-        // Texto: Posicion x, y de fruta
-        posicionMoneda.setTextSize(50);
-        posicionMoneda.setColor(Color.RED);
-        canvas.drawText(fruit.posX + ", " + fruit.posY, 0, 100, posicionMoneda);
+                fruit.posY -= speed;
+                fruit.rectangle.set((fruit.posX-fruit.radius),(fruit.posY-fruit.radius),(fruit.posX+fruit.radius),(fruit.posY+fruit.radius));
+                canvas.drawBitmap(fruit.image, null, fruit.rectangle, null);
+            }
 
+            // Si colisiona fruta y cesta => suma puntuacion y genera fruta nueva
+            if(checkCollision(basket, fruit)) {
+                messageX = fruit.posX;
+                messageY = fruit.posY;
+                message = "+" + fruit.points;
+                sizeMessage = 100;
 
-        // Texto: Posicion x, y de cesta
-        posicionCesta.setTextSize(50);
-        posicionCesta.setColor(Color.YELLOW);
-        canvas.drawText(basket.posY + ", " + basket.posX, 0, 160, posicionCesta);
+                score += fruit.points;
 
-        // Texto: Flag de colisión
-        hit.setTextSize(50);
-        hit.setColor(Color.GREEN);
-        canvas.drawText("HIT: " + checkCollision(basket, fruit), 0, 220, hit);
+                fruit = createFruit(canvas);
+            }
 
-        // Texto: Score
-        lbScore.setTextSize(50);
-        lbScore.setColor(Color.BLUE);
-        canvas.drawText("Puntos: " + score, this.getWidth() - 250, 100, lbScore);
+            // Texto: Puntos sumados
+            if(sizeMessage > 0) {
+                sizeMessage--;
+            }
+            lbPlusScore.setTextSize(sizeMessage);
+            lbPlusScore.setColor(Color.BLUE);
+            canvas.drawText(message, messageX, messageY, lbPlusScore);
 
-        // Texto: Fails
-        lbFails.setTextSize(50);
-        lbFails.setColor(Color.MAGENTA);
-        canvas.drawText("FAILS: " + fails, this.getWidth() - 250, 160, lbFails);
+            // Texto: Score
+            lbTotalScore.setTextSize(50);
+            lbTotalScore.setColor(Color.BLUE);
+            canvas.drawText("Puntos: " + score, 10, 100, lbTotalScore);
+
+            // Texto: Fails
+            lbFails.setTextSize(50);
+            lbFails.setColor(Color.MAGENTA);
+            canvas.drawText("FAILS: " + fails, 10, 160, lbFails);
+
+            // Texto: Fruit position
+            fruitPosition.setTextSize(50);
+            fruitPosition.setColor(Color.RED);
+            if (fruit != null) {
+                canvas.drawText("Fruit: " + fruit.posX + ", " + fruit.posY, 10, 220, fruitPosition);
+            }
     }
 
     private boolean checkCollision(GameObject o1, GameObject o2) {
@@ -114,5 +140,22 @@ public class Juego extends View {
         } else {
             return false;
         }
+    }
+
+    private Bitmap randomizeImage(Bitmap image, int x, int y) {
+        int width = image.getWidth()/7;
+        int height = image.getHeight()/4;
+        Bitmap tempImage = Bitmap.createBitmap(image, x* width, y* height, width, height);
+
+        return tempImage;
+    }
+
+    private Fruit createFruit(Canvas canvas) {
+        int x = new Random().nextInt(7);
+        int y = new Random().nextInt(4);
+        int fruitScore = (1 + x + y) * 5;
+        Bitmap image = randomizeImage(allFruits,x, y);
+
+        return new Fruit(canvas, image, speed, fruitScore);
     }
 }
