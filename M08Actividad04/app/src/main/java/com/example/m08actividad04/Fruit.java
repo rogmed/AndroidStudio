@@ -23,13 +23,4 @@ public class Fruit extends GameObject {
         this.posX = radius + new Random().nextInt(canvas.getWidth() - radius*2);
         this.rectangle = new RectF((posX-radius),(posY-radius),(posX+radius),(posY+radius));
     }
-
-    /*
-    public void update() {
-        posY -= speed;
-        rectangle.set((posX-radius),(posY-radius),(posX+radius),(posY+radius));
-        canvas.drawBitmap(image, null, rectangle, null);
-    }
-
-     */
 }

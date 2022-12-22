@@ -12,28 +12,21 @@ import android.view.MotionEvent;
 public class Basket extends GameObject {
 
     Bitmap image;
-    Canvas canvas;
 
-    public Basket(Juego juego, Canvas canvas) {
+    public Basket(Juego juego, Bitmap image) {
         this.juego = juego;
-        this.canvas = canvas;
-        this.image = BitmapFactory.decodeResource(juego.getResources(), R.drawable.basket);;
+        this.image = image;;
 
         this.radius = 100;
-        this.posX = canvas.getWidth() / 2;
+        this.posX = juego.getWidth() / 2;
         this.posY = radius + 50;
 
-        posX = canvas.getWidth() / 2;
+        posX = juego.getWidth() / 2;
         posY = radius + 50;
         rectangle = new RectF((posX-radius),(posY-radius),(posX+radius),(posY+radius));
     }
 
     public void move(MotionEvent event) {
         posX = (int)event.getX();
-    }
-
-    public void update() {
-        rectangle = new RectF((posX-radius),(posY-radius),(posX+radius),(posY+radius));
-        canvas.drawBitmap(image, null, rectangle, null);
     }
 }

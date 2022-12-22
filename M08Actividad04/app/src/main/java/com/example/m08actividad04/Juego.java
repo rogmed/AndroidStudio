@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,16 +24,30 @@ public class Juego extends View {
         super(context, attrs);
     }
 
-    public int score = 0;
-    public int fails = 0;
-    String message = "";
-    int messageX, messageY, sizeMessage;
+    private int score = 0;
+    private int lifes = 3;
+    private int passedFruits = 0;
+    private boolean isGameOver;
+
+    // Mensaje con la puntuacion que se muestra al coger una fruta
+    private String message = "";
+    private int messageX, messageY, sizeMessage, messageColor;
 
     Fruit fruit;
+    // Velocidad inicial de las frutas
     private int speed;
-    Basket basket;
+    private int acceleration = 1;
+    private Basket basket;
 
-    Bitmap allFruits = BitmapFactory.decodeResource(getResources(), R.drawable.fruitstransparent);
+    private Bitmap bmAllFruits = BitmapFactory.decodeResource(getResources(), R.drawable.fruitstransparent);
+    private Bitmap bmBasket = BitmapFactory.decodeResource(getResources(), R.drawable.basket);
+
+    // Fondo y texto en pantalla
+    Paint fondo = new Paint();
+    Paint lbTotalScore = new Paint();
+    Paint lbPlusScore = new Paint();
+    Paint lbFails = new Paint();
+    Paint gameOver = new Paint();
 
     //Sección que capta los eventos del usuario
     @Override
@@ -53,6 +68,7 @@ public class Juego extends View {
     }
 
     public void setup(int speed) {
+        this.basket = new Basket(this, bmBasket);
         this.speed = speed;
     }
 
@@ -61,43 +77,39 @@ public class Juego extends View {
     protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
 
-            //Definimos los objetos a pintar
-            Paint fondo = new Paint();
-            Paint lbTotalScore = new Paint();
-            Paint lbPlusScore = new Paint();
-            Paint lbFails = new Paint();
-
-            Paint fruitPosition = new Paint();
-
             // Fondo
             fondo.setColor(Color.BLACK);
             fondo.setStyle(Paint.Style.FILL_AND_STROKE);
             canvas.drawRect(new Rect(0,0,(this.getWidth()),(this.getHeight())),fondo);
 
             // Update fruta y cesta
-            if (basket == null) {
-                basket = new Basket(this, canvas);
-            } else {
-                basket.update();
-            }
+            basket.rectangle = new RectF((basket.posX-basket.radius),(basket.posY-basket.radius),(basket.posX+basket.radius),(basket.posY+basket.radius));
+            canvas.drawBitmap(basket.image, null, basket.rectangle, null);
 
-            boolean fruitIsOut = fruit != null && fruit.posY < 0;
-            // Si no hay fruta genera una, si hay fruta actualiza su posicion
-            if (fruit == null || fruitIsOut) {
+            // Si no hay fruta genera una
+            if (fruit == null && !isGameOver) {
                 fruit = createFruit(canvas);
-                if(fruitIsOut) { fails++; }
-            } else {
-
-                fruit.posY -= speed;
-                fruit.rectangle.set((fruit.posX-fruit.radius),(fruit.posY-fruit.radius),(fruit.posX+fruit.radius),(fruit.posY+fruit.radius));
-                canvas.drawBitmap(fruit.image, null, fruit.rectangle, null);
             }
 
-            // Si colisiona fruta y cesta => suma puntuacion y genera fruta nueva
-            if(checkCollision(basket, fruit)) {
+            // Si la fruta deja la pantalla reseteala y resta una vida (excepto si era un caramelo)
+            if (fruit.posY < 0 && !isGameOver) {
+                if (fruit.points > 0) {
+                    lifes--;
+                }
+
+                if (lifes == 0) {
+                    gameOver(canvas);
+                } else {
+                    fruit = createFruit(canvas);
+                }
+            }
+
+            // Si colisiona fruta y cesta => suma puntuacion, modifica mensaje y genera fruta nueva
+            if(checkCollision(basket, fruit) && !isGameOver) {
                 messageX = fruit.posX;
                 messageY = fruit.posY;
-                message = "+" + fruit.points;
+                messageColor = (fruit.points > 0)? Color.GREEN : Color.RED;
+                message = (fruit.points > 0)? "+" + fruit.points : fruit.points + "!!!";
                 sizeMessage = 100;
 
                 score += fruit.points;
@@ -105,12 +117,19 @@ public class Juego extends View {
                 fruit = createFruit(canvas);
             }
 
+            // Actualiza la posicion de la fruta
+            if (!isGameOver) {
+                fruit.posY -= speed;
+                fruit.rectangle.set((fruit.posX-fruit.radius),(fruit.posY-fruit.radius),(fruit.posX+fruit.radius),(fruit.posY+fruit.radius));
+                canvas.drawBitmap(fruit.image, null, fruit.rectangle, null);
+            }
+
             // Texto: Puntos sumados
             if(sizeMessage > 0) {
                 sizeMessage--;
             }
             lbPlusScore.setTextSize(sizeMessage);
-            lbPlusScore.setColor(Color.BLUE);
+            lbPlusScore.setColor(messageColor);
             canvas.drawText(message, messageX, messageY, lbPlusScore);
 
             // Texto: Score
@@ -121,14 +140,27 @@ public class Juego extends View {
             // Texto: Fails
             lbFails.setTextSize(50);
             lbFails.setColor(Color.MAGENTA);
-            canvas.drawText("FAILS: " + fails, 10, 160, lbFails);
+            canvas.drawText("VIDAS: " + lifes, 10, 160, lbFails);
 
+            if(isGameOver) {
+                // Texto: GameOver
+                Rect rectGameOver = new Rect();
+                gameOver.setTextSize(100);
+                gameOver.setColor(Color.RED);
+                //gameOver.getTextBounds("GAME OVER", 0, "GAME OVER".length(), rectGameOver);
+                String text = "GAME OVER";
+                canvas.drawText(text, canvas.getWidth()/4, canvas.getHeight()/2, gameOver);
+            }
+
+            /*
             // Texto: Fruit position
             fruitPosition.setTextSize(50);
             fruitPosition.setColor(Color.RED);
             if (fruit != null) {
                 canvas.drawText("Fruit: " + fruit.posX + ", " + fruit.posY, 10, 220, fruitPosition);
             }
+
+             */
     }
 
     private boolean checkCollision(GameObject o1, GameObject o2) {
@@ -151,11 +183,35 @@ public class Juego extends View {
     }
 
     private Fruit createFruit(Canvas canvas) {
-        int x = new Random().nextInt(7);
-        int y = new Random().nextInt(4);
-        int fruitScore = (1 + x + y) * 5;
-        Bitmap image = randomizeImage(allFruits,x, y);
 
-        return new Fruit(canvas, image, speed, fruitScore);
+        Bitmap image;
+        int score;
+        int currentSpeed = speed;
+        speed += acceleration;
+
+        boolean isCandy = new Random().nextBoolean();
+
+        if (isCandy) {
+            image = BitmapFactory.decodeResource(getResources(), R.drawable.candy);
+            score = -50;
+        } else {
+            int x = new Random().nextInt(7);
+            int y = new Random().nextInt(4);
+            image = randomizeImage(bmAllFruits,x, y);
+            score = (1 + x + y) * 5;
+        }
+
+        passedFruits++;
+        if(passedFruits % 10 == 0) {
+            speed = 10;
+            acceleration++;
+        }
+
+        return new Fruit(canvas, image, currentSpeed, score);
+    }
+
+    private void gameOver(Canvas canvas) {
+        isGameOver = true;
+        speed = 0;
     }
 }
