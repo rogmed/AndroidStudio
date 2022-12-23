@@ -212,6 +212,7 @@ public class Juego extends View {
     }
 
     private void gameOver(Canvas canvas) {
+        playSound("gameover");
         isGameOver = true;
         speed = 0;
     }
@@ -227,6 +228,9 @@ public class Juego extends View {
                 break;
             case "candy_collision":
                 mp = MediaPlayer.create(getContext(), R.raw.candy_collision);
+                break;
+            case "gameover":
+                mp = MediaPlayer.create(getContext(), R.raw.gameover);
                 break;
         }
 
