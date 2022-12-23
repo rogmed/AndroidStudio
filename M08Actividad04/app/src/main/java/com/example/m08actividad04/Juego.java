@@ -2,6 +2,8 @@ package com.example.m08actividad04;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -9,10 +11,15 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import java.io.FileDescriptor;
+import java.io.IOException;
 import java.util.Random;
 
 public class Juego extends View {
@@ -48,6 +55,9 @@ public class Juego extends View {
     Paint lbPlusScore = new Paint();
     Paint lbFails = new Paint();
     Paint gameOver = new Paint();
+
+    // Efectos de sonido
+    private MediaPlayer mp = new MediaPlayer();
 
     //Sección que capta los eventos del usuario
     @Override
@@ -94,6 +104,7 @@ public class Juego extends View {
             // Si la fruta deja la pantalla reseteala y resta una vida (excepto si era un caramelo)
             if (fruit.posY < 0 && !isGameOver) {
                 if (fruit.points > 0) {
+                    playSound("fruit_out");
                     lifes--;
                 }
 
@@ -113,6 +124,8 @@ public class Juego extends View {
                 sizeMessage = 100;
 
                 score += fruit.points;
+
+                playSound((fruit.points>0)? "fruit_collision" : "candy_collision");
 
                 fruit = createFruit(canvas);
             }
@@ -144,23 +157,11 @@ public class Juego extends View {
 
             if(isGameOver) {
                 // Texto: GameOver
-                Rect rectGameOver = new Rect();
                 gameOver.setTextSize(100);
                 gameOver.setColor(Color.RED);
-                //gameOver.getTextBounds("GAME OVER", 0, "GAME OVER".length(), rectGameOver);
                 String text = "GAME OVER";
                 canvas.drawText(text, canvas.getWidth()/4, canvas.getHeight()/2, gameOver);
             }
-
-            /*
-            // Texto: Fruit position
-            fruitPosition.setTextSize(50);
-            fruitPosition.setColor(Color.RED);
-            if (fruit != null) {
-                canvas.drawText("Fruit: " + fruit.posX + ", " + fruit.posY, 10, 220, fruitPosition);
-            }
-
-             */
     }
 
     private boolean checkCollision(GameObject o1, GameObject o2) {
@@ -214,4 +215,22 @@ public class Juego extends View {
         isGameOver = true;
         speed = 0;
     }
+
+    private void playSound(String option) {
+
+        switch (option) {
+            case "fruit_collision":
+                mp = MediaPlayer.create(getContext(), R.raw.fruit_collision);
+                break;
+            case "fruit_out":
+                mp = MediaPlayer.create(getContext(), R.raw.fruit_out);
+                break;
+            case "candy_collision":
+                mp = MediaPlayer.create(getContext(), R.raw.candy_collision);
+                break;
+        }
+
+        mp.start();
+    }
+
 }
