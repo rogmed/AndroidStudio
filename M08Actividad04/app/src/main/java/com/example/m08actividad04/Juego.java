@@ -17,6 +17,8 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
 
 import java.io.FileDescriptor;
 import java.io.IOException;
@@ -30,6 +32,8 @@ public class Juego extends View {
     public Juego(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
+
+    public MainActivity MA;
 
     private int score = 0;
     private int lifes = 3;
@@ -156,11 +160,15 @@ public class Juego extends View {
             canvas.drawText("VIDAS: " + lifes, 10, 160, lbFails);
 
             if(isGameOver) {
+                playSound("gameover");
+                MA.setContentView(R.layout.game_over);
+                MA.setFinalScore(score);
                 // Texto: GameOver
-                gameOver.setTextSize(100);
+   /*             gameOver.setTextSize(100);
+   /*             gameOver.setTextSize(100);
                 gameOver.setColor(Color.RED);
                 String text = "GAME OVER";
-                canvas.drawText(text, canvas.getWidth()/4, canvas.getHeight()/2, gameOver);
+                canvas.drawText(text, canvas.getWidth()/4, canvas.getHeight()/2, gameOver);*/
             }
     }
 

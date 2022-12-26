@@ -10,6 +10,7 @@ import android.view.ViewTreeObserver;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Timer;
@@ -26,19 +27,36 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        btStartGame = (Button) findViewById(R.id.btStartGame);
 
         difficultyOptions.add(new Difficulty("Fácil (Velocidad x0.5)", 5));
         difficultyOptions.add(new Difficulty("Normal", 10));
         difficultyOptions.add(new Difficulty("Difícil (Velocidad x1.5)", 15));
+
+        setupActivityMain();
+    }
+
+    public void setFinalScore(int score) {
+        TextView finalScore = (TextView) findViewById(R.id.scoreText);
+        String textScore = finalScore.getText() + String.valueOf(score);
+        finalScore.setText(textScore);
+    }
+
+    private void setupActivityMain()
+    {
+        setContentView(R.layout.activity_main);
+
+        btStartGame = (Button) findViewById(R.id.btStartGame);
 
         spDifficulty = (Spinner) findViewById(R.id.spDifficulty);
         ArrayAdapter<Difficulty> adapter = new ArrayAdapter<>(MainActivity.this,
                 androidx.appcompat.R.layout.support_simple_spinner_dropdown_item, difficultyOptions);
         spDifficulty.setAdapter(adapter);
         spDifficulty.setSelection(1);
+
+    }
+
+    public void onClickExit(View view) {
+        setupActivityMain();
     }
 
     public void onClickBtStartGame(View view) {
@@ -52,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.game_screen);
 
         juego = (Juego) findViewById(R.id.GameScreen);
+        juego.MA = this;
         ViewTreeObserver obs = juego.getViewTreeObserver();
 
         obs.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
