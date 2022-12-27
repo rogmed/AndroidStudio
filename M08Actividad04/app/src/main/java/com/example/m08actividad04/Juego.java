@@ -2,8 +2,6 @@ package com.example.m08actividad04;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -12,16 +10,10 @@ import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 
-import java.io.FileDescriptor;
-import java.io.IOException;
 import java.util.Random;
 
 public class Juego extends View {
@@ -52,16 +44,19 @@ public class Juego extends View {
 
     private Bitmap bmAllFruits = BitmapFactory.decodeResource(getResources(), R.drawable.fruitstransparent);
     private Bitmap bmBasket = BitmapFactory.decodeResource(getResources(), R.drawable.basket);
+    private Bitmap bmBackground = BitmapFactory.decodeResource(getResources(), R.drawable.beach_dunes);
 
     // Fondo y texto en pantalla
     Paint fondo = new Paint();
     Paint lbTotalScore = new Paint();
     Paint lbPlusScore = new Paint();
     Paint lbFails = new Paint();
-    Paint gameOver = new Paint();
 
     // Efectos de sonido
-    private MediaPlayer mp = new MediaPlayer();
+    private MediaPlayer mpSfx;
+
+    // Musica
+    private MediaPlayer mpMusic = MediaPlayer.create(getContext(), R.raw.game_music);
 
     //Sección que capta los eventos del usuario
     @Override
@@ -82,8 +77,10 @@ public class Juego extends View {
     }
 
     public void setup(int speed) {
-        this.basket = new Basket(this, bmBasket);
+        this.basket = new Basket(this.getWidth(), bmBasket);
         this.speed = speed;
+        mpMusic.start();
+
     }
 
     @SuppressLint("DrawAllocation")
@@ -92,9 +89,13 @@ public class Juego extends View {
             super.onDraw(canvas);
 
             // Fondo
+        /*
             fondo.setColor(Color.BLACK);
             fondo.setStyle(Paint.Style.FILL_AND_STROKE);
             canvas.drawRect(new Rect(0,0,(this.getWidth()),(this.getHeight())),fondo);
+
+         */
+            canvas.drawBitmap(bmBackground, null, new Rect(0,0,(this.getWidth()),(this.getHeight())), null);
 
             // Update fruta y cesta
             basket.rectangle = new RectF((basket.posX-basket.radius),(basket.posY-basket.radius),(basket.posX+basket.radius),(basket.posY+basket.radius));
@@ -158,18 +159,6 @@ public class Juego extends View {
             lbFails.setTextSize(50);
             lbFails.setColor(Color.MAGENTA);
             canvas.drawText("VIDAS: " + lifes, 10, 160, lbFails);
-
-            if(isGameOver) {
-                playSound("gameover");
-                MA.setContentView(R.layout.game_over);
-                MA.setFinalScore(score);
-                // Texto: GameOver
-   /*             gameOver.setTextSize(100);
-   /*             gameOver.setTextSize(100);
-                gameOver.setColor(Color.RED);
-                String text = "GAME OVER";
-                canvas.drawText(text, canvas.getWidth()/4, canvas.getHeight()/2, gameOver);*/
-            }
     }
 
     private boolean checkCollision(GameObject o1, GameObject o2) {
@@ -216,33 +205,36 @@ public class Juego extends View {
             acceleration++;
         }
 
-        return new Fruit(canvas, image, currentSpeed, score);
+        return new Fruit(this.getWidth(), this.getHeight(), image, currentSpeed, score);
     }
 
     private void gameOver(Canvas canvas) {
+        mpMusic.stop();
         playSound("gameover");
         isGameOver = true;
         speed = 0;
+        MA.setContentView(R.layout.game_over);
+        MA.setFinalScore(score);
     }
 
     private void playSound(String option) {
 
         switch (option) {
             case "fruit_collision":
-                mp = MediaPlayer.create(getContext(), R.raw.fruit_collision);
+                mpSfx = MediaPlayer.create(getContext(), R.raw.fruit_collision);
                 break;
             case "fruit_out":
-                mp = MediaPlayer.create(getContext(), R.raw.fruit_out);
+                mpSfx = MediaPlayer.create(getContext(), R.raw.fruit_out);
                 break;
             case "candy_collision":
-                mp = MediaPlayer.create(getContext(), R.raw.candy_collision);
+                mpSfx = MediaPlayer.create(getContext(), R.raw.candy_collision);
                 break;
             case "gameover":
-                mp = MediaPlayer.create(getContext(), R.raw.gameover);
+                mpSfx = MediaPlayer.create(getContext(), R.raw.gameover);
                 break;
         }
 
-        mp.start();
+        mpSfx.start();
     }
 
 }

@@ -13,15 +13,14 @@ public class Basket extends GameObject {
 
     Bitmap image;
 
-    public Basket(Juego juego, Bitmap image) {
-        this.juego = juego;
+    public Basket(int gameWidth, Bitmap image) {
         this.image = image;;
 
-        this.radius = 100;
-        this.posX = juego.getWidth() / 2;
-        this.posY = radius + 50;
+        this.radius = gameWidth / 10;
+        this.posX = gameWidth / 2;
+        this.posY = radius * 2;
 
-        posX = juego.getWidth() / 2;
+        posX = gameWidth / 2;
         posY = radius + 50;
         rectangle = new RectF((posX-radius),(posY-radius),(posX+radius),(posY+radius));
     }
