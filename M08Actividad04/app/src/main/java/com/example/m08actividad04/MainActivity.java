@@ -36,9 +36,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setFinalScore(int score) {
-        TextView finalScore = (TextView) findViewById(R.id.scoreText);
-        String textScore = finalScore.getText() + String.valueOf(score);
-        finalScore.setText(textScore);
+        TextView lbScore = (TextView) findViewById(R.id.lbScore);
+        String text = String.valueOf(score);
+        lbScore.setText(text);
     }
 
     private void setupActivityMain()

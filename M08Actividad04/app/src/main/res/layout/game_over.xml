@@ -7,6 +7,17 @@
     tools:context=".MainActivity">
 
     <TextView
+        android:id="@+id/lbScore"
+        android:layout_width="142dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="20dp"
+        android:text="000"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="@+id/lbFinalScore"
+        app:layout_constraintStart_toStartOf="@+id/lbFinalScore"
+        app:layout_constraintTop_toBottomOf="@+id/lbFinalScore" />
+
+    <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -45,7 +56,7 @@
         app:layout_constraintVertical_bias="0.187" />
 
     <TextView
-        android:id="@+id/scoreText"
+        android:id="@+id/lbFinalScore"
         android:layout_width="142dp"
         android:layout_height="36dp"
         android:layout_marginStart="132dp"

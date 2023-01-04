@@ -13,6 +13,7 @@ import android.media.MediaPlayer;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.TextView;
 
 import java.util.Random;
 
@@ -44,7 +45,7 @@ public class Juego extends View {
 
     private Bitmap bmAllFruits = BitmapFactory.decodeResource(getResources(), R.drawable.fruitstransparent);
     private Bitmap bmBasket = BitmapFactory.decodeResource(getResources(), R.drawable.basket);
-    private Bitmap bmBackground = BitmapFactory.decodeResource(getResources(), R.drawable.beach_dunes);
+    //private Bitmap bmBackground = BitmapFactory.decodeResource(getResources(), R.drawable.beach_dunes);
 
     // Fondo y texto en pantalla
     Paint fondo = new Paint();
@@ -88,14 +89,7 @@ public class Juego extends View {
     protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
 
-            // Fondo
-        /*
-            fondo.setColor(Color.BLACK);
-            fondo.setStyle(Paint.Style.FILL_AND_STROKE);
-            canvas.drawRect(new Rect(0,0,(this.getWidth()),(this.getHeight())),fondo);
-
-         */
-            canvas.drawBitmap(bmBackground, null, new Rect(0,0,(this.getWidth()),(this.getHeight())), null);
+            //canvas.drawBitmap(bmBackground, null, new Rect(0,0,(this.getWidth()),(this.getHeight())), null);
 
             // Update fruta y cesta
             basket.rectangle = new RectF((basket.posX-basket.radius),(basket.posY-basket.radius),(basket.posX+basket.radius),(basket.posY+basket.radius));
@@ -180,6 +174,7 @@ public class Juego extends View {
         return tempImage;
     }
 
+    // Crea frutas, que aleatoriamente pueden ser un caramelo (enemigos que restan puntos)
     private Fruit createFruit(Canvas canvas) {
 
         Bitmap image;
@@ -196,7 +191,7 @@ public class Juego extends View {
             int x = new Random().nextInt(7);
             int y = new Random().nextInt(4);
             image = randomizeImage(bmAllFruits,x, y);
-            score = (1 + x + y) * 5;
+            score = fruitScore(x, y);
         }
 
         passedFruits++;
@@ -208,12 +203,19 @@ public class Juego extends View {
         return new Fruit(this.getWidth(), this.getHeight(), image, currentSpeed, score);
     }
 
+    // Calcula la puntuacion de la fruta segun su posicion en el bitmap, de forma que cada
+    // tipo de fruta siempre tiene la misma puntuacion
+    private int fruitScore(int x, int y) {
+        return (1 + x + y) * 5;
+    }
+
     private void gameOver(Canvas canvas) {
         mpMusic.stop();
         playSound("gameover");
         isGameOver = true;
         speed = 0;
         MA.setContentView(R.layout.game_over);
+
         MA.setFinalScore(score);
     }
 
